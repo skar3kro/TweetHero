@@ -2,8 +2,27 @@ import { supabase } from './db.js';
 import { getNextTopic } from './getTopic.js';
 import { generateTweet } from './generateTweet.js';
 import { postTweet } from './postTweet.js';
+import { getMarketSnapshot } from './marketData.js';
+
+const SUPPORTED_MODES = new Set(['premarket', 'open', 'recap', 'education']);
+
+function getMode() {
+  const mode = process.env.MODE?.toLowerCase();
+
+  if (!mode || !SUPPORTED_MODES.has(mode)) {
+    return 'education';
+  }
+
+  return mode;
+}
 
 async function run() {
+  const mode = getMode();
+  console.log(`Running bot in MODE="${mode}"`);
+
+  console.log('Fetching live Indian market snapshot...');
+  const marketSnapshot = await getMarketSnapshot();
+
   console.log('Fetching next pending topic...');
   const topic = await getNextTopic();
 
@@ -15,7 +34,11 @@ async function run() {
   console.log(`Found topic #${topic.id}: ${topic.topic ?? topic.title ?? 'Untitled topic'}`);
 
   console.log('Generating tweet with OpenAI...');
-  const tweetText = await generateTweet(topic);
+  const tweetText = await generateTweet({
+    topic,
+    mode,
+    marketSnapshot
+  });
   console.log(`Generated tweet (${tweetText.length} chars): ${tweetText}`);
 
   console.log('Posting tweet to Twitter...');
