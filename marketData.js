@@ -1,11 +1,16 @@
 export async function getMarketSnapshot() {
   const symbols = "%5ENSEI,%5EBSESN,%5ENSEBANK";
-
   const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
 
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0",
+      "Accept": "application/json"
+    }
+  });
+
   if (!response.ok) {
-    throw new Error("Failed to fetch market data");
+    throw new Error(`Yahoo API failed: ${response.status}`);
   }
 
   const data = await response.json();
