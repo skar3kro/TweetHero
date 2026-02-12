@@ -2,6 +2,8 @@ import { supabase } from './db.js';
 import { getNextTopic } from './getTopic.js';
 import { generateTweet } from './generateTweet.js';
 import { postTweet } from './postTweet.js';
+import { getMarketSnapshot } from './marketData.js';
+
 
 async function run() {
   const mode = (process.env.MODE || "education").trim().toLowerCase();
