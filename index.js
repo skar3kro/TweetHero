@@ -9,7 +9,7 @@ async function run() {
 
   if (!topic) {
     console.log('No pending topics found. Exiting.');
-    return;
+    process.exit(0);   // Clean exit when nothing to do
   }
 
   console.log(`Found topic #${topic.id}: ${topic.topic ?? topic.title ?? 'Untitled topic'}`);
@@ -33,9 +33,11 @@ async function run() {
   }
 
   console.log('Topic status updated to posted. Done.');
+
+  process.exit(0);   // Clean success exit
 }
 
 run().catch((error) => {
   console.error('Bot run failed:', error.message);
-  process.exit(1);
+  process.exit(1);   // Proper failure exit
 });
