@@ -1,45 +1,34 @@
 export async function getMarketSnapshot() {
-  const symbols = "%5ENSEI,%5EBSESN,%5ENSEBANK";
-  const url = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
+  const apiKey = process.env.TWELVEDATA_API_KEY;
 
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-      "Accept": "application/json"
-    }
-  });
+  if (!apiKey) {
+    throw new Error("Missing TWELVEDATA_API_KEY");
+  }
+
+  const symbols = "NIFTY,BSESN,NSEBANK";
+
+  const url = `https://api.twelvedata.com/quote?symbol=${symbols}&exchange=NSE&apikey=${apiKey}`;
+
+  const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`Yahoo API failed: ${response.status}`);
+    throw new Error(`TwelveData failed: ${response.status}`);
   }
 
   const data = await response.json();
-  const results = data.quoteResponse.result;
 
-  const snapshot = {};
-
-  for (const item of results) {
-    if (item.symbol === "^NSEI") {
-      snapshot.nifty = {
-        price: item.regularMarketPrice,
-        changePercent: item.regularMarketChangePercent
-      };
+  return {
+    nifty: {
+      price: data["NIFTY"]?.close,
+      changePercent: data["NIFTY"]?.percent_change
+    },
+    sensex: {
+      price: data["BSESN"]?.close,
+      changePercent: data["BSESN"]?.percent_change
+    },
+    bankNifty: {
+      price: data["NSEBANK"]?.close,
+      changePercent: data["NSEBANK"]?.percent_change
     }
-
-    if (item.symbol === "^BSESN") {
-      snapshot.sensex = {
-        price: item.regularMarketPrice,
-        changePercent: item.regularMarketChangePercent
-      };
-    }
-
-    if (item.symbol === "^NSEBANK") {
-      snapshot.bankNifty = {
-        price: item.regularMarketPrice,
-        changePercent: item.regularMarketChangePercent
-      };
-    }
-  }
-
-  return snapshot;
+  };
 }
